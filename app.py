@@ -5,18 +5,29 @@ import rdbms
 app = Flask(__name__)
 CORS(app)
 
+CORS(app, resources = {
+    r'/getChatNames': { 'origins': '*' },
+    r'/getConversation' : { 'origins': '*' }
+})
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/getChatNames', methods=['GET'])
-def getChats():
-    rows = rdbms.getChats()
+def getChatNames():
+    rows = rdbms.getChatNames()
+    print(rows)
     return jsonify(rows), 200
 
-@app.route('/getChatHistory', methods=['GET'])
+@app.route('/getConversation', methods=['GET'])
 def getChatHistory():
-    chatId = request.args.id
+    print("app getConversation triggered")
+    chatId = request.args.get('chatId')
+    conversation = rdbms.getConversation(chatId)
+    if not conversation:
+        return jsonify({'status': 'not ok'}), 200
+    return jsonify({'status':"ok", 'conversation':conversation}), 200
     
 
 if __name__ == "__main__":

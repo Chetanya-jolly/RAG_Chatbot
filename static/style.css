@@ -48,6 +48,7 @@ body {
 .chats {
     font-size: 1.1rem;
     padding: 4px;
+    cursor: pointer;
 }
 
 /* Credits */
@@ -132,6 +133,8 @@ body {
     left: 25%;
     width: 50%;
     height: 50%;
+    color: white;
+    text-align: center;
     background-color: black;
     border-radius: 8px;
     z-index: 1000;
