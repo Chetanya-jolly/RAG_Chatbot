@@ -1,55 +1,128 @@
 IP_PORT = 'http://127.0.0.1:5000/'
 var debug1;
+var addDocDialogBox = null;
+var newChatDialogBox = null;
 
-function addDoc() {
-    const exists = document.getElementById('floating-div');
-    const mainContainer = document.getElementById('main-container')
-    if(exists) {   
-        mainContainer.removeChild(exists);
+function createAddDocDialogBox() {
+    
+    // Hiding the new chat dialog box is active close it
+    if(newChatDialogBox != null)
+        newChatDialogBox.style.display = "none";
+
+    // Toggling the display so that if the dialog box is already rendered we can close it
+    if(addDocDialogBox != null){
+        addDocDialogBox.style.display = (addDocDialogBox.style.display == "none") ? "block" : "none";
         return;
     }
-    addDocDialogRendered = true;
-    const floatingDiv = document.createElement('div')
-    floatingDiv.id = 'floating-div'
-    floatingDiv.innerHTML = 'Please upload a document'
-    mainContainer.appendChild(floatingDiv); 
+
+    const mainContainer = document.getElementById('main-container')
+    addDocDialogBox = document.createElement('div')
+    addDocDialogBox.id = 'add-doc-dialog-box'
+    addDocDialogBox.innerHTML = `
+        Please upload a document </br>
+        <form id="new-doc-form">
+            <input type="file" id="add-doc-input" accept=".pdf, .doc, .txt" multiple required>
+            <button type="submit">Submit</button>
+        </form>
+    `; 
+    mainContainer.appendChild(addDocDialogBox); 
 }
 
-// function createNewChatDialogBox(){
-//     // const
-//     const
-// }
+function createNewChatDialogBox(){
 
-// function newChat(name) {
-//     const newChat = document.createElement("div");
-//     newChat
-// }
+    // If the add doc dialog box is active hide that
+    if(addDocDialogBox != null)
+        addDocDialogBox.style.display = "none";
+
+    // Toggling the display so that if the dialog box is already rendered we can close it
+    if(newChatDialogBox != null){
+        newChatDialogBox.style.display = (newChatDialogBox.style.display == 'none') ? 'block' : 'none';
+        return;
+    }
+
+    newChatDialogBox = document.createElement("div");
+    newChatDialogBox.id = 'new-chat-dialog-box'
+    newChatDialogBox.innerHTML = `
+        Enter the name of the new chat </br>
+        <form id="new-chat-form">
+            <input type="text" name="chatName" id="new-chat-name-input">
+            <button type="submit">Submit</button>
+        </form>
+    `;
+    document.body.appendChild(newChatDialogBox);
+    document.getElementById('new-chat-name-input').focus();
+    newChat();
+}
+
+function newChat() {
+    document.getElementById('new-chat-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        
+        const form = document.getElementById('new-chat-form')
+        const formData = new FormData(form);
+        fetch(`${IP_PORT}/newChat`, {
+            method: "PUT",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            debug1 = data;
+            if(data.status === "ok") 
+                return data;
+            throw new Error("New chat could not be created");
+        })
+        .then(data => {
+            console.log(data);
+            event.target.reset();
+            newChatDialogBox.style.display = "none";
+            createChatNameDiv(data['name'], data['id'])
+        })
+        .catch(error => {
+            console.error("There was an error:", error);
+        });
+    });
+}
 
 function getChats() { 
-    const chatHistory = document.getElementById('sb-chat-history')
     fetch(`${IP_PORT}/getChatNames`, {method: 'GET'})
     .then(response => response.json())
     .then(data => {
         data.forEach(chat => {
-            const newDiv = document.createElement("div");
-            newDiv.classList.add('chats');
-            newDiv.id = chat['id'];
-            newDiv.textContent = chat['name'];
-            newDiv.onclick = () => getChatHistory(chat['id']);
-            chatHistory.appendChild(newDiv);
+            createChatNameDiv(chat['name'], chat['id']);
         });
     })
 }
-function getChatHistory(chatId){
+
+function createChatNameDiv(name, id) {
+    const chatHistory = document.getElementById('sb-chat-history')
+    const newDiv = document.createElement("div");
+    newDiv.classList.add('chats');
+    newDiv.id = id;
+    newDiv.textContent = name;
+    newDiv.onclick = () => getConversation(id);
+    chatHistory.appendChild(newDiv);
+}
+
+function getConversation(chatId){
     const chatWindow = document.getElementById('chat-window');
-    fetch(`${IP_PORT}/getConversation?chatId=${chatId}`)
+    chatWindow.innerHTML = "";
+    fetch(`${IP_PORT}/getConversation/${chatId}`)
     .then(response => response.json())
     .then(data => {
-        if(data.status === 'ok') return data;
-        else throw new Error("No such conversation exists");
+        if(data.status === 'ok') 
+            return data;
+        else
+            throw new Error("No such conversation exists");
     })
     .then(data => {
         debug1 = data;
+        if(data.conversation.length === 0){
+            const newDiv = (document.getElementById('new-chat-default') == null) ? document.createElement('div') : document.getElementById('new-chat-default');
+            newDiv.id = 'new-chat-default';
+            newDiv.textContent = 'Ask Away'
+            chatWindow.append(newDiv);
+            return;
+        } 
         data.conversation.forEach( convo => {
             // console.log(convo);
             const question = document.createElement("div")
@@ -67,7 +140,6 @@ function getChatHistory(chatId){
     .catch(error => {
         console.error("There was an error:", error);
     })
-
 }
 
 function init(){

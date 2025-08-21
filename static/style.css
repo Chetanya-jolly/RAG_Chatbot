@@ -127,15 +127,33 @@ body {
 }
 
 /* Floating Modal */
-#floating-div {
+#add-doc-dialog-box {
     position: fixed;
     top: 25%;
     left: 25%;
     width: 50%;
-    height: 50%;
+    height: 25%;
     color: white;
     text-align: center;
     background-color: black;
     border-radius: 8px;
     z-index: 1000;
+    padding: 50px 10px 10px 10px;
+}
+
+#new-chat-dialog-box{
+    padding: 50px 10px 10px 10px;
+    position: fixed;
+    display: block;
+    top: 25%;
+    left: 37.5%;
+    width: 25%;
+    min-width: 475px;
+    height: 20%;
+    color: white;
+    text-align: center;
+    background-color: black;
+    border-radius: 8px;
+    z-index: 1000;
+    font-size: 1.25rem;
 }

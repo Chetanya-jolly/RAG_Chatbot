@@ -46,11 +46,27 @@ def getConversation(chatId):
         temp['question'] = row[1]
         temp['answer'] = row[2]
         conversation.append(temp)
-    print("RDBMS getConversation triggered")
     cur.close()
     cnxn.close()
 
     return conversation
+
+def newChat(chatName):
+    cnxn = getDb()
+    cur = cnxn.cursor()
+
+    query = '''
+        insert into `chats` (name, context)
+        values (%s, "");
+    '''
+    cur.execute(query, (chatName,))
+    chatId = cur.lastrowid
+
+    cur.close()
+    cnxn.commit()
+    cnxn.close()
+
+    return chatId
 
 if __name__ == '__main__':
     getChatNames()
