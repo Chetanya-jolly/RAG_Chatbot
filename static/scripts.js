@@ -3,6 +3,8 @@ var debug1;
 var addDocDialogBox = null;
 var newChatDialogBox = null;
 
+const socket = io(IP_PORT);
+
 function createAddDocDialogBox() {
     
     // Hiding the new chat dialog box is active close it
@@ -145,5 +147,15 @@ function getConversation(chatId){
 function init(){
     getChats()
 }
+
+function testSocket(data="hello") {
+    socket.emit('test', data);
+    console.log(socket.id);
+    return;
+}
+
+socket.on('test', (data) => {
+    console.log(data);
+})
 
 init()

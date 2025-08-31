@@ -2,3 +2,4 @@ venv/
 poc/
 __pycache__/
 testing/
+LLMmodel/

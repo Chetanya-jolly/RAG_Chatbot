@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request, render_template
+from flask_socketio import SocketIO
 from flask_cors import CORS
 import rdbms
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+socket = SocketIO(app, cors_allowed_origins='*')
 
 CORS(app, resources = {
     r'/getChatNames': { 'origins': '*' },
@@ -36,5 +38,21 @@ def newChat():
                     'name': chatName,
                     'id': chatId}), 201
 
+@socket.on("test")
+def test(data):
+    print("Sid", request.sid)
+    print("Name space", request.namespace)
+    print("Event", end='')
+    print(request.event)
+    socket.emit("test", data)
+
+#################################################################
+# This is automatically hit when the socket.io.min.js is loaded
+# @socket.on("connect")
+# def func():
+#     print(request.sid)
+#################################################################
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # app.run(host="0.0.0.0", port=5000, debug=True)
+    socket.run(app, host='0.0.0.0', port=5000, debug=True)
